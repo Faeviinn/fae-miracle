@@ -1,0 +1,45 @@
+name: Fae-Miracle Test Email
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-email:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Send test email
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+        run: |
+          python - << 'EOF'
+          import os
+          import smtplib
+          from email.mime.text import MIMEText
+
+          msg = MIMEText("✅ Fae-miracle is alive.\n\nYour email setup works.")
+          msg["Subject"] = "Fae-Miracle Test Email"
+          msg["From"] = os.environ["GMAIL_USER"]
+          msg["To"] = os.environ["NOTIFICATION_EMAIL"]
+
+          server = smtplib.SMTP("smtp.gmail.com", 587)
+          server.starttls()
+          server.login(
+              os.environ["GMAIL_USER"],
+              os.environ["GMAIL_APP_PASSWORD"]
+          )
+          server.send_message(msg)
+          server.quit()
+
+          print("Test email sent successfully")
+          EOF
